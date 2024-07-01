@@ -177,9 +177,9 @@ function truncDigits(inputNumber, digits) {
             axios.get(url)
                 .then(response => {
                     const data = response.data.values;
-                    document.getElementById('historicalDeployedNodes').innerText = data[0];
-                    document.getElementById('activeNode').innerText = data[1];
-                    document.getElementById('historicalTopEntities').innerText = data[2];
+                    document.getElementById('historicalDeployedNodes').innerText = new Intl.NumberFormat('en-IN').format(data[0]);
+                    document.getElementById('activeNode').innerText = new Intl.NumberFormat('en-IN').format(data[1]);
+                    document.getElementById('historicalTopEntities').innerText = new Intl.NumberFormat('en-IN').format(data[2]);
                 })
                 .catch(error => console.error('Error al cargar datos desde Google Sheets:', error));
     }
@@ -289,10 +289,10 @@ function truncDigits(inputNumber, digits) {
         fetch('https://api-explorer.lacnet.com/api/v2/stats')
             .then(response => response.json())
             .then(data => {
-                const total_blocks = data.total_blocks;
-                const total_transactions = data.total_transactions;
-                const transactions_today = data.transactions_today;
-                const network_utilization_percentage = data.network_utilization_percentage*100;
+                const total_blocks = new Intl.NumberFormat('en-IN').format(data.total_blocks);
+                const total_transactions = new Intl.NumberFormat('en-IN').format(data.total_transactions);
+                const transactions_today = new Intl.NumberFormat('en-IN').format(data.transactions_today);
+                const network_utilization_percentage = new Intl.NumberFormat('en-IN').format(data.network_utilization_percentage*100);
                 document.getElementById('total_blocks').innerText = total_blocks;
                 document.getElementById('total_transactions').innerText = total_transactions;
                 document.getElementById('transactions_today').innerText = transactions_today;
