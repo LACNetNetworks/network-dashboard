@@ -117,11 +117,11 @@
 
 <div class="container mx-auto p-4">
     <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 h-screen">
-        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Total block produced">
+        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Total blocks produced">
             <div class="card-title">Total Blocks</div>
             <div class="card-value" id="total_blocks" >...</div>
         </div>
-        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Current Active Nodes">
+        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Current active nodes">
             <div class="card-title">Active Nodes</div>
             <div class="card-value" id="activeNode"> ... 
             </div>
@@ -130,15 +130,15 @@
             <div class="card-title">Historial Deployed Nodes</div>
             <div class="card-value" id="historicalDeployedNodes">...</div>
         </div>
-        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Total of entities over the time">
+        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Total entities over the time">
             <div class="card-title">Historical Entities</div>
             <div class="card-value" id="historicalTopEntities">...</div>
         </div>
-        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Total transaction executed on the gas mopdel">
+        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Total transactions executed on the gas mopdel">
             <div class="card-title">Transactions Gas Model</div>
             <div class="card-value" id="txCount">...</div>
         </div>
-        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Total transactions cumulated over the time">
+        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Total transactions accumulated over time">
             <div class="card-title">Total Transactions</div>
             <div class="card-value" id="total_transactions">...</div>
         </div>
@@ -146,15 +146,15 @@
             <div class="card-title">Transactions Today</div>
             <div class="card-value" id="transactions_today">...</div>
         </div>
-        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Current Network Utilization Percentage">
+        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Current Nnetwork utilization percentage">
             <div class="card-title">Network utilization</div>
             <div class="card-value" id="network_utilization_percentage">...</div>
         </div>
-        <div class="col-span-1 sm:col-span-2 lg:col-span-2 card text-white rounded-lg p-4" data-tooltip="Total of transsacction over a week">
+        <div class="col-span-1 sm:col-span-2 lg:col-span-2 card text-white rounded-lg p-4" data-tooltip="Total transacction over athe last 20 days">
             <div class="card-title">Transactions Stats</div>
             <canvas id="txChart" class="w-full h-full"></canvas>
         </div>
-        <div class="col-span-1 sm:col-span-2 lg:col-span-2 card text-white rounded-lg p-4" data-tooltip="Nodes geolocalized">
+        <div class="col-span-1 sm:col-span-2 lg:col-span-2 card text-white rounded-lg p-4" data-tooltip="Geolocalized Nodes">
             <div class="card-map">Nodos</div>
             <div id="map"></div>
         </div>
@@ -168,20 +168,62 @@ function truncDigits(inputNumber, digits) {
   return Math.floor(inputNumber * fact) / fact;
 }
      function loadDataFromSheets() {
-            const API_KEY = 'AIzaSyAULTAX3bG9vKCDKNTA8hkqtSz4CSdet2k';
-            const SPREADSHEET_ID = '1scKP4pgBZeVRaN81L2TAOGvvQ_A7JuL_kYfRbqwLQmI';
-            const RANGE = 'A2:D2';
+            const API_KEY = 'AIzaSyDL5va5guLWMhRczt365wEkXvj6oqacAo4';
+            const SPREADSHEET_ID = '11c8l1J-P287sLzMRzsBKi96J-GVTZqMuC7hzkd4HJs8';
+            const RANGE = 'B1:B3';
+
             const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
 
             axios.get(url)
                 .then(response => {
-                    const data = response.data.values[0];
+                    const data = response.data.values;
                     document.getElementById('historicalDeployedNodes').innerText = data[0];
                     document.getElementById('activeNode').innerText = data[1];
                     document.getElementById('historicalTopEntities').innerText = data[2];
                 })
                 .catch(error => console.error('Error al cargar datos desde Google Sheets:', error));
     }
+
+    function loadMapfromSheets() {
+        const API_KEY = 'AIzaSyDL5va5guLWMhRczt365wEkXvj6oqacAo4';
+        const SPREADSHEET_ID = '11c8l1J-P287sLzMRzsBKi96J-GVTZqMuC7hzkd4HJs8';
+        const RANGE = 'A:C';
+
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Sheet2!${RANGE}?key=${API_KEY}`;
+
+        positionData = JSON.parse("[]");
+            
+        axios.get(url)
+            .then(response => {
+                const data = response.data.values;
+                for (let i = 1; i < data.length; i++) {
+                    if (data[i][0]!='') {    
+                        positionData.push({"lat":parseFloat(data[i][1]),"lng":parseFloat(data[i][2]),"label":data[i][0]});    
+                    }
+                } 
+
+                const map = L.map('map').setView([0, 0], 2);
+
+                // Add OpenStreetMap tiles
+
+                https://openmaptiles.github.io/dark-matter-gl-style/#0.92/0/0
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                }).addTo(map);
+
+
+                // Add markers to the map
+                positionData.forEach(position => {
+                    L.marker([position.lat, position.lng]).addTo(map)
+                        .bindPopup(position.label)
+                        .openPopup();
+                });
+
+            })
+            .catch(error => console.error('Error al cargar datos desde Google Sheets:', error));
+
+    }
+  
 
     document.addEventListener('DOMContentLoaded', function () {
         const ctx = document.getElementById('txChart').getContext('2d');
@@ -260,33 +302,9 @@ function truncDigits(inputNumber, digits) {
 
               
 
-        // JSON data with positions for markers
-        const positionData = [
-            {"lat": 51.505, "lng": -0.09, "label": "Marker 1"},
-            {"lat": 48.8566, "lng": 2.3522, "label": "Marker 2"},
-            {"lat": 40.7128, "lng": -74.0060, "label": "Marker 3"},
-            // Add more positions as needed
-        ];
-
-        // Initialize the map
-        const map = L.map('map').setView([0, 0], 2);
-
-        // Add OpenStreetMap tiles
-
-        https://openmaptiles.github.io/dark-matter-gl-style/#0.92/0/0
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-        }).addTo(map);
-
-
-        // Add markers to the map
-        positionData.forEach(position => {
-            L.marker([position.lat, position.lng]).addTo(map)
-                .bindPopup(position.label)
-                .openPopup();
-        });
     
      loadDataFromSheets();
+     loadMapfromSheets();
 
     });
 
