@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Grid Layout with Tailwind CSS</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+.background {
+    background-color: black;
+
+    background-size: cover;
+    background-position: center;
+    height: 100%;
+}
+        .card1 {
+            background-color: rgba(128, 128, 128, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 1rem;
+            position: relative;
+            cursor: pointer; /* Add a cursor to indicate it's interactive */
+            margin-top: 30px;
+        }
+
+        .card1::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%; /* Position above the element */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none; /* Prevents tooltip from interfering with cursor */
+        }
+
+        .card1:hover::after {
+            opacity: 1;
+        }
+        
+        .card {
+            background-color: rgba(128, 128, 128, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 40vh;
+            padding: 1rem;
+            position: relative;
+            opacity: 70%;
+            cursor: pointer; /* Add a cursor to indicate it's interactive */
+            margin-top: 30px;
+        }
+
+        .card::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: 100%; /* Position above the element */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #333;
+            color: #fff;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none; /* Prevents tooltip from interfering with cursor */
+        }
+
+        .card:hover::after {
+            opacity: 1;
+        }
+                .card-title {
+                    position: absolute;
+                    top: 0.5rem;
+                    left: 0.5rem;
+                    font-size: 1.25rem;
+                    font-weight: normal;
+                    opacity: 70%;
+                }
+                .card-map {
+                    position: absolute;
+                    top: 0.5rem;
+                    left: 0.5rem;
+                    font-size: 1.25rem;
+                    font-weight: normal;
+                    opacity: 70%;
+                    padding-top: 30;
+                }        
+                .card-value {
+                    font-size: 3rem;
+                    font-weight: bold;
+                    opacity: 70%;
+                }
+        #map {
+            width: 100%;
+            height: 95%;
+            margin-top: 20px;
+            border-radius: 10px; /* This will create a circular border */
+            overflow: hidden; /* This ensures that the content inside the element does not overflow the rounded borders */
+        }
+
+    </style>
+</head>
+<body class="background bg-blue-600">
+
+<div class="container mx-auto p-4">
+    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 h-screen">
+        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Total block produced">
+            <div class="card-title">Total Blocks</div>
+            <div class="card-value" id="total_blocks" >...</div>
+        </div>
+        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Current Active Nodes">
+            <div class="card-title">Active Nodes</div>
+            <div class="card-value" id="activeNode"> ... 
+            </div>
+        </div>
+        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Total nodes deployed over the time">
+            <div class="card-title">Historial Deployed Nodes</div>
+            <div class="card-value" id="historicalDeployedNodes">...</div>
+        </div>
+        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Total of entities over the time">
+            <div class="card-title">Historical Entities</div>
+            <div class="card-value" id="historicalTopEntities">...</div>
+        </div>
+        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Total transaction executed on the gas mopdel">
+            <div class="card-title">Transactions Gas Model</div>
+            <div class="card-value" id="txCount">...</div>
+        </div>
+        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Total transactions cumulated over the time">
+            <div class="card-title">Total Transactions</div>
+            <div class="card-value" id="total_transactions">...</div>
+        </div>
+        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Total transactions executed today">
+            <div class="card-title">Transactions Today</div>
+            <div class="card-value" id="transactions_today">...</div>
+        </div>
+        <div class="col-span-1 card1 text-white rounded-lg p-4" data-tooltip="Current Network Utilization Percentage">
+            <div class="card-title">Network utilization</div>
+            <div class="card-value" id="network_utilization_percentage">...</div>
+        </div>
+        <div class="col-span-1 sm:col-span-2 lg:col-span-2 card text-white rounded-lg p-4" data-tooltip="Total of transsacction over a week">
+            <div class="card-title">Transactions Stats</div>
+            <canvas id="txChart" class="w-full h-full"></canvas>
+        </div>
+        <div class="col-span-1 sm:col-span-2 lg:col-span-2 card text-white rounded-lg p-4" data-tooltip="Nodes geolocalized">
+            <div class="card-map">Nodos</div>
+            <div id="map"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+function truncDigits(inputNumber, digits) {
+  const fact = 10 ** digits;
+  return Math.floor(inputNumber * fact) / fact;
+}
+     function loadDataFromSheets() {
+            const API_KEY = 'AIzaSyAULTAX3bG9vKCDKNTA8hkqtSz4CSdet2k';
+            const SPREADSHEET_ID = '1scKP4pgBZeVRaN81L2TAOGvvQ_A7JuL_kYfRbqwLQmI';
+            const RANGE = 'A2:D2';
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+
+            axios.get(url)
+                .then(response => {
+                    const data = response.data.values[0];
+                    document.getElementById('historicalDeployedNodes').innerText = data[0];
+                    document.getElementById('activeNode').innerText = data[1];
+                    document.getElementById('historicalTopEntities').innerText = data[2];
+                })
+                .catch(error => console.error('Error al cargar datos desde Google Sheets:', error));
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const ctx = document.getElementById('txChart').getContext('2d');
+       
+        fetch('https://api-explorer.lacnet.com/api/v2/stats/charts/transactions')
+            .then(response => response.json())
+            .then(data => {
+                const chartData = data.chart_data;
+                const dates = chartData.map(data => data.date);
+                const txCounts = chartData.map(data => data.tx_count);
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [{
+                            label: 'Transaction Count',
+                            data: txCounts,
+                            borderColor: 'rgba(255, 255, 255, 1)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                            borderWidth: 2,
+                            fill: true,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: 'rgba(255, 255, 255, 1)'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 1)'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: 'rgba(255, 255, 255, 1)'
+                                },
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'rgba(255, 255, 255, 1)'
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+
+        fetch('https://api-explorer.lacnet.com/api/v2/addresses/0x34B220Ef63dea567eDf6d540316B5a3f4831Cf6c/counters')
+            .then(response => response.json())
+            .then(data => {
+                const txCount = data.transactions_count;
+                document.getElementById('txCount').innerText = txCount;                
+            });
+
+            
+        fetch('https://api-explorer.lacnet.com/api/v2/stats')
+            .then(response => response.json())
+            .then(data => {
+                const total_blocks = data.total_blocks;
+                const total_transactions = data.total_transactions;
+                const transactions_today = data.transactions_today;
+                const network_utilization_percentage = data.network_utilization_percentage*100;
+                document.getElementById('total_blocks').innerText = total_blocks;
+                document.getElementById('total_transactions').innerText = total_transactions;
+                document.getElementById('transactions_today').innerText = transactions_today;
+                document.getElementById('network_utilization_percentage').innerText = truncDigits(network_utilization_percentage,5)+"%";
+                
+            });
+
+              
+
+        // JSON data with positions for markers
+        const positionData = [
+            {"lat": 51.505, "lng": -0.09, "label": "Marker 1"},
+            {"lat": 48.8566, "lng": 2.3522, "label": "Marker 2"},
+            {"lat": 40.7128, "lng": -74.0060, "label": "Marker 3"},
+            // Add more positions as needed
+        ];
+
+        // Initialize the map
+        const map = L.map('map').setView([0, 0], 2);
+
+        // Add OpenStreetMap tiles
+
+        https://openmaptiles.github.io/dark-matter-gl-style/#0.92/0/0
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+        }).addTo(map);
+
+
+        // Add markers to the map
+        positionData.forEach(position => {
+            L.marker([position.lat, position.lng]).addTo(map)
+                .bindPopup(position.label)
+                .openPopup();
+        });
+    
+     loadDataFromSheets();
+
+    });
+
+
+</script>
+
+</body>
+</html>
