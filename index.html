@@ -295,9 +295,8 @@ function truncDigits(inputNumber, digits) {
         fetch('https://api-explorer.lacnet.com/api/v2/stats')
             .then(response => response.json())
             .then(data => {
-                const total_blocks = ffloat(data.total_blocks);
+        
                 const total_transactions = ffloat(data.total_transactions);
-                //const transactions_today = ffloat(data.transactions_today);
                 const network_utilization_percentage = ffloat(truncDigits(data.network_utilization_percentage*100,2));
                 document.getElementById('total_transactions').innerText = total_transactions;
                 document.getElementById('network_utilization_percentage').innerText = network_utilization_percentage+"%";
