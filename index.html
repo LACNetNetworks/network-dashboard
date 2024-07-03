@@ -173,7 +173,7 @@ function truncDigits(inputNumber, digits) {
      function loadDataFromSheets() {
             const API_KEY = 'AIzaSyDL5va5guLWMhRczt365wEkXvj6oqacAo4';
             const SPREADSHEET_ID = '11c8l1J-P287sLzMRzsBKi96J-GVTZqMuC7hzkd4HJs8';
-            const RANGE = 'B1:B5';
+            const RANGE = 'B1:B6';
 
             const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
 
@@ -184,6 +184,7 @@ function truncDigits(inputNumber, digits) {
                     document.getElementById('activeNode').innerText = ffloat(data[1]);
                     document.getElementById('historicalTopEntities').innerText = ffloat(data[2]);
                     document.getElementById('transactions_today').innerText = ffloat(data[4]);
+                    document.getElementById('total_blocks').innerText = ffloat(data[5]);
 
                 })
                 .catch(error => console.error('Error al cargar datos desde Google Sheets:', error));
@@ -298,9 +299,7 @@ function truncDigits(inputNumber, digits) {
                 const total_transactions = ffloat(data.total_transactions);
                 //const transactions_today = ffloat(data.transactions_today);
                 const network_utilization_percentage = ffloat(truncDigits(data.network_utilization_percentage*100,2));
-                document.getElementById('total_blocks').innerText = total_blocks;
                 document.getElementById('total_transactions').innerText = total_transactions;
-
                 document.getElementById('network_utilization_percentage').innerText = network_utilization_percentage+"%";
                 
             });
@@ -311,7 +310,7 @@ function truncDigits(inputNumber, digits) {
      setInterval(function() {
          loadDataFromSheets();
          console.log('reload');
-     }, 30000);
+     }, 60000);
 
     })
 
