@@ -173,7 +173,7 @@ function truncDigits(inputNumber, digits) {
      function loadDataFromSheets() {
             const API_KEY = 'AIzaSyDL5va5guLWMhRczt365wEkXvj6oqacAo4';
             const SPREADSHEET_ID = '11c8l1J-P287sLzMRzsBKi96J-GVTZqMuC7hzkd4HJs8';
-            const RANGE = 'B1:B3';
+            const RANGE = 'B1:B5';
 
             const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
 
@@ -183,6 +183,8 @@ function truncDigits(inputNumber, digits) {
                     document.getElementById('historicalDeployedNodes').innerText = ffloat(data[0]);
                     document.getElementById('activeNode').innerText = ffloat(data[1]);
                     document.getElementById('historicalTopEntities').innerText = ffloat(data[2]);
+                    document.getElementById('transactions_today').innerText = ffloat(data[4]);
+
                 })
                 .catch(error => console.error('Error al cargar datos desde Google Sheets:', error));
     }
@@ -294,76 +296,26 @@ function truncDigits(inputNumber, digits) {
             .then(data => {
                 const total_blocks = ffloat(data.total_blocks);
                 const total_transactions = ffloat(data.total_transactions);
-                const transactions_today = ffloat(data.transactions_today);
+                //const transactions_today = ffloat(data.transactions_today);
                 const network_utilization_percentage = ffloat(truncDigits(data.network_utilization_percentage*100,2));
                 document.getElementById('total_blocks').innerText = total_blocks;
                 document.getElementById('total_transactions').innerText = total_transactions;
-                document.getElementById('transactions_today').innerText = transactions_today;
+
                 document.getElementById('network_utilization_percentage').innerText = network_utilization_percentage+"%";
                 
             });
 
-              
-
-    
-    const JSON_RPC_URL = 'http://localhost:8545'; // Replace with your JSON-RPC server URL
-
-    async function fetchJSONRPC(method, params = []) {
-        const response = await fetch(JSON_RPC_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                jsonrpc: '2.0',
-                method: method,
-                params: params,
-                id: 1,
-            }),
-        });
-        const data = await response.json();
-        if (data.error) {
-            throw new Error(data.error.message);
-        }
-        return data.result;
-    }
-
-    async function getTodayTransactionCount() {
-        const latestBlock = await fetchJSONRPC('eth_blockNumber');
-        const latestBlockNumber = parseInt(latestBlock, 16);
-
-        const now = new Date();
-        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const startOfDayTimestamp = Math.floor(startOfDay.getTime() / 1000);
-
-        let transactionCount = 0;
-
-        for (let i = latestBlockNumber; i >= 0; i--) {
-            const block = await fetchJSONRPC('eth_getBlockByNumber', [ `0x${i.toString(16)}`, true ]);
-            if (block.timestamp < startOfDayTimestamp) {
-                break;
-            }
-            transactionCount += block.transactions.length;
-        }
-
-        return transactionCount;
-    }
-
-    getTodayTransactionCount()
-        .then(count => {
-            console.log(`Today's transaction count: ${count}`);
-        })
-        .catch(error => {
-            console.error('Error fetching transaction count:', error);
-        });
-
-
-     loadDataFromSheets();
      loadMapfromSheets();
+     loadDataFromSheets();
 
-    });
+     setInterval(function() {
+         loadDataFromSheets();
+         console.log('reload');
+     }, 30000);
 
+    })
 
+   
 </script>
 
 </body>
